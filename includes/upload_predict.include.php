@@ -13,8 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_predict'])) {
     $urea_concentration     = filter_input(INPUT_POST, 'urea_concentration', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $calcium_concentration  = filter_input(INPUT_POST, 'calcium_concentration', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     
+    $currentDirectory = getcwd();
+    $venv_path = (string)$currentDirectory . "\\venv";
+    $python = $venv_path . "\\Scripts\\python.exe";
+
+    # Check if python env existed
+    # If not, then:
+    #   1. creates an environment
+    #   2. install the necessary libraries like joblib, scikit-learn, pathlib, and 
+    #   their dependencies too
+    # This eliminates the need for the user to manually isntall
+    # everything although it will take more time to predict when doing it the first time
+    if (!file_exists($venv_path)){
+        shell_exec("py -m venv venv; {$venv_path}\\scripts\\activate; pip install -r requirements.py");
+    }
+
     # gravity, ph, osmo, cond, urea, calc
-    $predicted = shell_exec("py bridge.py $specific_gravity $ph $osmolarity $conductivity $urea_concentration $calcium_concentration");
+    $predicted = shell_exec("{$python} bridge.py $specific_gravity $ph $osmolarity $conductivity $urea_concentration $calcium_concentration");
 
     $upload = new Upload();
     $upload_log = new Logs();
@@ -25,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_predict'])) {
     while ($uid != false) {
         $upload_uid += 1;
     }
-
+    
     $result = $upload->save($specific_gravity, $ph, $osmolarity, $conductivity, $urea_concentration, $calcium_concentration, $predicted);
 
     if ($result) {
