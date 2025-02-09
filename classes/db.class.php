@@ -4,8 +4,8 @@ class Db {
     protected function conn() {
         
         $hname  = "localhost";
-        $uname  = "ksp_admin";
-        $pwd    = "ksp_admin";
+        $uname  = "root";
+        $pwd    = "";
         $dbname = "kidney_stone_prediction_db";
         
         $conn = new PDO("mysql:host=$hname;dbname=$dbname", $uname, $pwd);
